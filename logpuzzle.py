@@ -21,7 +21,7 @@ import sys
 import re
 import os
 
-PATTERN = r'/\S+/puzzle/\S+'
+PATTERN = r'\S+puzzle\S+'
 
 
 def read_urls(filename):
@@ -32,12 +32,12 @@ def read_urls(filename):
     # +++your code here+++
     with open(filename, 'r') as f:
         puzzle_IP = f.read()
-        matches = re.findall(PATTERN, puzzle_IP)
-        matches.sort()
-        matches = [f'http://code.google.com/{match}' for match in matches]
-        puzzle_urls = [url1 for url1, url2 in zip(
-            matches[:-1], matches[1:])if url1 == url2]
-    return puzzle_urls
+    urls = []
+    matches = list(set(re.findall(PATTERN, puzzle_IP, re.DOTALL)))
+    for url in matches:
+        urls.append("https://code.google.com"+url)
+    urls = sorted(urls, key=lambda url: url[-8:])
+    return urls
 
 
 def download_images(img_urls, dest_dir):
@@ -52,18 +52,22 @@ def download_images(img_urls, dest_dir):
     images = []
     if not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
+
     x = 0
     for url in img_urls:
         x = x+1
-        img = urllib.request.urlretrieve(url, f'{dest_dir}/image{x}.jpg')
-        images.append(img)
+        image_url = f'img{x}.jpg'
+        print(f'Hacking {image_url}')
+        urllib.request.urlretrieve(url, f'{dest_dir}/{image_url}')
+        images.append(image_url)
+
     with open(f'{dest_dir}/index.html', 'w') as f:
         f.write("""
-        <html> 
-        <body>
+        <html> <body>
         """)
-        for img in images:
-            f.write(f'<img src="{img}"/>')
+
+        for image in images:
+            f.write(f'<img src="{image}"/>')
         f.write("""
         </body>
         </html>
