@@ -13,12 +13,15 @@ Here's what a puzzle URL looks like (spread out onto multiple lines):
 HTTP/1.0" 302 528 "-" "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US;
 rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6"
 """
+__author__ = 'Areiahna Cooks, Ybrayym'
 
-import os
-import re
-import sys
-import urllib.request
 import argparse
+import urllib.request
+import sys
+import re
+import os
+
+PATTERN = r'\S+puzzle\S+'
 
 
 def read_urls(filename):
@@ -27,7 +30,14 @@ def read_urls(filename):
     alphabetically in increasing order, and screening out duplicates.
     """
     # +++your code here+++
-    pass
+    with open(filename, 'r') as f:
+        puzzle_IP = f.read()
+    urls = []
+    matches = list(set(re.findall(PATTERN, puzzle_IP, re.DOTALL)))
+    for url in matches:
+        urls.append("https://code.google.com"+url)
+    urls = sorted(urls, key=lambda url: url[-8:])
+    return urls
 
 
 def download_images(img_urls, dest_dir):
@@ -39,7 +49,29 @@ def download_images(img_urls, dest_dir):
     Creates the directory if necessary.
     """
     # +++your code here+++
-    pass
+    images = []
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+
+    x = 0
+    for url in img_urls:
+        x = x+1
+        image_url = f'img{x}.jpg'
+        print(f'Hacking {image_url}')
+        urllib.request.urlretrieve(url, f'{dest_dir}/{image_url}')
+        images.append(image_url)
+
+    with open(f'{dest_dir}/index.html', 'w') as f:
+        f.write("""
+        <html> <body>
+        """)
+
+        for image in images:
+            f.write(f'<img src="{image}"/>')
+        f.write("""
+        </body>
+        </html>
+        """)
 
 
 def create_parser():
